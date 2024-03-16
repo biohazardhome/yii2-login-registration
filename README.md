@@ -1,1 +1,1 @@
-# yii2-login-registration
+# Yii2 login and registration
