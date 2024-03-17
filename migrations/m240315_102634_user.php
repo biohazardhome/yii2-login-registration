@@ -12,7 +12,16 @@ class m240315_102634_user extends Migration
      */
     public function safeUp()
     {
-
+        $this->createTable('user', [
+            'id' => $this->primaryKey(),
+            'username' => $this->string(),
+            'email' => $this->string(),
+            'password' => $this->string(),
+            'status' => $this->integer()->defaultValue(10),
+            'auth_key' => $this->string(),
+            'created_at' => $this->timestamp()->null(),
+            'updated_at' => $this->timestamp()->null()->defaultValue(null)->append('ON UPDATE CURRENT_TIMESTAMP'),
+        ]);
     }
 
     /**
@@ -20,9 +29,7 @@ class m240315_102634_user extends Migration
      */
     public function safeDown()
     {
-        echo "m240315_102634_user cannot be reverted.\n";
-
-        return false;
+        $this->dropTable('user');
     }
 
     /*
