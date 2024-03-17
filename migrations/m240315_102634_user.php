@@ -19,7 +19,7 @@ class m240315_102634_user extends Migration
             'password' => $this->string(),
             'status' => $this->integer()->defaultValue(10),
             'auth_key' => $this->string(),
-            'created_at' => $this->timestamp()->null(),
+            'created_at' => $this->timestamp()->null()->defaultExpression('CURRENT_TIMESTAMP'),
             'updated_at' => $this->timestamp()->null()->defaultValue(null)->append('ON UPDATE CURRENT_TIMESTAMP'),
         ]);
     }
