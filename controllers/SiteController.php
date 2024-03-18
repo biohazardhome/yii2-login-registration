@@ -77,7 +77,16 @@ class SiteController extends Controller
             if ($model->load($request->post()) && $model->validate()) {
                 // $model->save();
                 // return Yii::$app->getSecurity()->generatePasswordHash('admin');
-                if (!User::findByUsername($model->username)) {
+                
+                if (User::findByUsername($model->username)) {
+                    Yii::$app->session->addFlash('danger', 'Ошибка уже есть такой пользователь: '. $model->username);
+                }
+
+                if (User::findByEmail($model->email)) {
+                    Yii::$app->session->addFlash('danger', 'Пользователь с такой почтой уже существует: '. $model->email);
+                }
+
+                if (!User::findByUsername($model->username) && !User::findByEmail($model->email)) {
                     $user = new User;
                     // $user->load($model);
                     $user->username = $model->username;
@@ -87,8 +96,8 @@ class SiteController extends Controller
                     $user->save();
 
                     Yii::$app->user->login($user, 3600*24*30);
-                } else {
-                    Yii::$app->session->addFlash('danger', 'Ошибка уже есть такой пользователь: '. $model->username);
+
+                    Yii::$app->session->addFlash('success', 'Успешно зарегистрирован новый пользователь: '. $model->username);
                 }
             }
         }
@@ -110,7 +119,7 @@ class SiteController extends Controller
             if ($model->load($request->post()) && $model->validate()) {
                 $user = User::findByEmail($model->email);
                 if ($user) {
-                    $password = Yii::$app->security->generateRandomString();
+                    $password = $user->generatePassword();
 
                     $user->password = Yii::$app->security->generatePasswordHash($password);
                     $user->save();
