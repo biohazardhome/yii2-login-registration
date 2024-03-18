@@ -23,6 +23,12 @@ class RegistrationForm extends Model
             [['username', 'password', 'email'], 'required'],
             // password is validated by validatePassword()
             // ['password', 'validatePassword'],
+            [['username', 'email'], 'trim'],
+            ['username', 'unique', 'targetClass' => '\app\models\User', 'message' => 'This username has already been taken.'],
+            ['email', 'unique', 'targetClass' => '\app\models\User', 'message' => 'This email address has already been taken.'],
+            ['username', 'string', 'min' => 3, 'max' => 255],
+            ['email', 'string', 'max' => 255],
+            ['password', 'string', 'min' => 6],
             ['email', 'email'],
         ];
     }
@@ -33,10 +39,16 @@ class RegistrationForm extends Model
      */
     public function registration()
     {
-        if ($this->validate()) {
-            // return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600*24*30 : 0);
+        if (!$this->validate()) {
+            return null;
         }
-        return false;
+ 
+        $user = new User();
+        $user->username = $this->username;
+        $user->email = $this->email;
+        $user->setPassword($this->password);
+        $user->generateAuthKey();
+        return $user->save() ? $user : null;
     }
 
     /**

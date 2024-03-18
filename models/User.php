@@ -103,12 +103,26 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
         return Yii::$app->security->validatePassword($password, $this->password);;
     }
 
+    public function setPassword($password)
+    {
+        $this->password = Yii::$app->security->generatePasswordHash($password);
+    }
+
     /**
      * Generates "remember me" authentication key
      */
     public function generateAuthKey()
     {
         $this->auth_key = Yii::$app->security->generateRandomString();
+    }
+
+    public function resetPassword() {
+        $password = $this->generatePassword();
+
+        $this->password = Yii::$app->security->generatePasswordHash($password);
+        $this->save();
+
+        return $password;
     }
 
     public function generatePassword() {

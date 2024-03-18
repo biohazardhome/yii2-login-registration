@@ -69,35 +69,24 @@ class SiteController extends Controller
 
     public function actionRegistration() {
         $model = new RegistrationForm();
-        // $model = new User();
 
-        $request = Yii::$app->request;
-
-        if ($request->isPost) { 
-            if ($model->load($request->post()) && $model->validate()) {
-                // $model->save();
-                // return Yii::$app->getSecurity()->generatePasswordHash('admin');
+        if (isPost()) { 
+            if ($model->load(post()) && $model->validate()) {
                 
-                if (User::findByUsername($model->username)) {
-                    Yii::$app->session->addFlash('danger', 'Ошибка уже есть такой пользователь: '. $model->username);
+                /*if (User::findByUsername($model->username)) {
+                    session()->addFlash('danger', 'Уже есть такой пользователь: '. $model->username);
                 }
 
                 if (User::findByEmail($model->email)) {
-                    Yii::$app->session->addFlash('danger', 'Пользователь с такой почтой уже существует: '. $model->email);
-                }
+                    session()->addFlash('danger', 'Пользователь с такой почтой уже существует: '. $model->email);
+                }*/
 
                 if (!User::findByUsername($model->username) && !User::findByEmail($model->email)) {
-                    $user = new User;
-                    // $user->load($model);
-                    $user->username = $model->username;
-                    $user->email = $model->email;
-                    $user->password = Yii::$app->security->generatePasswordHash($model->password);
-                    // $user->status = User::STATUS_ACTIVE;
-                    $user->save();
+                    if ($user = $model->registration()) {
+                        user()->login($user, 3600*24*30);
 
-                    Yii::$app->user->login($user, 3600*24*30);
-
-                    Yii::$app->session->addFlash('success', 'Успешно зарегистрирован новый пользователь: '. $model->username);
+                        session()->addFlash('success', 'Успешно зарегистрирован новый пользователь: '. $model->username);
+                    }
                 }
             }
         }
@@ -113,18 +102,13 @@ class SiteController extends Controller
     public function actionForgotPassword() {
         $model = new ForgotPasswordForm;
 
-        $request = Yii::$app->request;
-
-        if ($request->isPost) { 
-            if ($model->load($request->post()) && $model->validate()) {
+        if (isPost()) { 
+            if ($model->load(post()) && $model->validate()) {
                 $user = User::findByEmail($model->email);
                 if ($user) {
-                    $password = $user->generatePassword();
+                    $password = $user->resetPassword();
 
-                    $user->password = Yii::$app->security->generatePasswordHash($password);
-                    $user->save();
-                    // return $user->password;
-                    Yii::$app->mailer->compose()
+                    app()->mailer->compose()
                         ->setFrom('stalker-nikko@yandex.ru')
                         ->setTo($model->email)
                         ->setSubject('Forgot password')
@@ -132,7 +116,7 @@ class SiteController extends Controller
                         ->send();
 
                 } else {
-                    Yii::$app->session->addFlash('danger', 'Ошибка нет такого пользователя с почтой: '. $model->email);
+                    session()->addFlash('danger', 'Нет такого пользователя с почтой: '. $model->email);
                 }
             }
         }
